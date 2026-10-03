@@ -212,6 +212,9 @@ func (u *UnifiedTranscriptionService) ProcessJob(ctx context.Context, jobID stri
 //nolint:gocyclo // Orchestrator function with multiple steps
 func (u *UnifiedTranscriptionService) processSingleTrackJob(ctx context.Context, job *models.TranscriptionJob) error {
 	logger.Info("Processing single-track job", "job_id", job.ID, "model_family", job.Parameters.ModelFamily)
+	if prefectEligible(job.Parameters) {
+		return u.processPrefectJob(ctx, job)
+	}
 
 	// Create processing context
 	procCtx := interfaces.ProcessingContext{
