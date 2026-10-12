@@ -29,8 +29,8 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 	if m.MeetingType == "" {
 		m.MeetingType = "meeting"
 	}
-	if m.MeetingType != "meeting" && m.MeetingType != "interview" {
-		return m, "meeting_type must be meeting or interview"
+	if m.MeetingType != "meeting" && m.MeetingType != "interview" && m.MeetingType != "conversation" {
+		return m, "meeting_type must be meeting, interview or conversation"
 	}
 	if speakers != "" {
 		n, err := strconv.Atoi(speakers)
@@ -71,7 +71,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param audio formData file true "Audio file"
 // @Param project formData string true "Project (Nextcloud folder under Projects/)"
 // @Param title formData string false "Title"
-// @Param meeting_type formData string false "meeting (default) or interview"
+// @Param meeting_type formData string false "meeting (default), interview or conversation"
 // @Param speakers formData int false "Number of people"
 // @Param language formData string false "nl (default) or en"
 // @Param outputs formData string false "Comma list of plain, verslag, samenvatting (default all)"

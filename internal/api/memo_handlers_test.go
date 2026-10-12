@@ -13,6 +13,9 @@ func TestValidMemoSettingsDefaults(t *testing.T) {
 }
 
 func TestValidMemoSettingsChoices(t *testing.T) {
+	if _, problem := validMemoSettings("A", "conversation", "", "", ""); problem != "" {
+		t.Fatal(problem)
+	}
 	m, problem := validMemoSettings("Klant A", "interview", "3", "verslag, samenvatting", "2026-10-12T09:30:00+02:00")
 	if problem != "" {
 		t.Fatal(problem)

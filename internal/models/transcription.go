@@ -42,7 +42,7 @@ type TranscriptionJob struct {
 // An empty Project means the job is not published.
 type MemoSettings struct {
 	Project     string     `json:"project,omitempty" gorm:"type:text"`
-	MeetingType string     `json:"meeting_type,omitempty" gorm:"type:varchar(20)"` // meeting | interview
+	MeetingType string     `json:"meeting_type,omitempty" gorm:"type:varchar(20)"` // meeting | interview | conversation
 	Speakers    int        `json:"speakers,omitempty" gorm:"default:0"`
 	Outputs     string     `json:"outputs,omitempty" gorm:"type:varchar(64)"` // comma list: plain,verslag,samenvatting
 	RecordedAt  *time.Time `json:"recorded_at,omitempty"`

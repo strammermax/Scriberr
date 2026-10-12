@@ -1185,7 +1185,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "meeting (default) or interview",
+                        "description": "meeting (default), interview or conversation",
                         "name": "meeting_type",
                         "in": "formData"
                     },
@@ -4588,7 +4588,7 @@
             "type": "object",
             "properties": {
                 "meeting_type": {
-                    "description": "meeting | interview",
+                    "description": "meeting | interview | conversation",
                     "type": "string"
                 },
                 "outputs": {
