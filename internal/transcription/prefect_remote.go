@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -26,13 +27,52 @@ func prefectEligible(p models.WhisperXParams) bool {
 		(p.InitialPrompt == nil || *p.InitialPrompt == "")
 }
 
-func prefectTranscript(ctx context.Context, audio, language string) (*interfaces.TranscriptResult, error) {
+// bridgeAuth returns the audio bridge base URL and its bearer header value.
+func bridgeAuth() (string, string, error) {
 	base := strings.TrimRight(os.Getenv("PREFECT_AUDIO_BRIDGE_URL"), "/")
-	tokenPath := os.Getenv("PREFECT_AUDIO_TOKEN_FILE")
-	token, err := os.ReadFile(tokenPath)
-	if err != nil || len(strings.TrimSpace(string(token))) == 0 {
-		return nil, fmt.Errorf("Prefect audio token file unavailable")
+	token, err := os.ReadFile(os.Getenv("PREFECT_AUDIO_TOKEN_FILE"))
+	if base == "" || err != nil || len(strings.TrimSpace(string(token))) == 0 {
+		return "", "", fmt.Errorf("Prefect audio bridge not configured")
 	}
+	return base, "Bearer " + strings.TrimSpace(string(token)), nil
+}
+
+// memoHeaders passes the publication settings to the bridge (URL-encoded UTF-8).
+func memoHeaders(req *http.Request, job *models.TranscriptionJob) {
+	m := job.Memo
+	if m.Project == "" {
+		return
+	}
+	set := func(name, value string) {
+		if value != "" {
+			req.Header.Set(name, url.QueryEscape(value))
+		}
+	}
+	set("X-Project", m.Project)
+	if job.Title != nil {
+		set("X-Title", *job.Title)
+	}
+	set("X-Filename", filepath.Base(job.AudioPath))
+	set("X-Meeting-Type", m.MeetingType)
+	set("X-Outputs", m.Outputs)
+	if m.Speakers > 0 {
+		set("X-Speakers", fmt.Sprint(m.Speakers))
+	}
+	recorded := job.CreatedAt
+	if m.RecordedAt != nil {
+		recorded = *m.RecordedAt
+	}
+	if !recorded.IsZero() {
+		set("X-Recorded-At", recorded.Format(time.RFC3339))
+	}
+}
+
+func prefectTranscript(ctx context.Context, job *models.TranscriptionJob, language string) (*interfaces.TranscriptResult, error) {
+	base, auth, err := bridgeAuth()
+	if err != nil {
+		return nil, err
+	}
+	audio := job.AudioPath
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Hour)
 	defer cancel()
 	client := &http.Client{Timeout: 150 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error {
@@ -54,8 +94,8 @@ func prefectTranscript(ctx context.Context, audio, language string) (*interfaces
 	req.ContentLength = info.Size()
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("X-Audio-Language", language)
-	auth := "Bearer " + strings.TrimSpace(string(token))
 	req.Header.Set("Authorization", auth)
+	memoHeaders(req, job)
 	var accepted struct {
 		JobID string `json:"job_id"`
 		RunID string `json:"run_id"`
@@ -130,7 +170,7 @@ func (u *UnifiedTranscriptionService) processPrefectJob(ctx context.Context, job
 	if job.Parameters.Language != nil && *job.Parameters.Language != "" {
 		language = *job.Parameters.Language
 	}
-	result, err := prefectTranscript(ctx, job.AudioPath, language)
+	result, err := prefectTranscript(ctx, job, language)
 	if err != nil {
 		return err
 	}
@@ -155,4 +195,40 @@ func (u *UnifiedTranscriptionService) processPrefectJob(ctx context.Context, job
 	transcript := string(data)
 	job.Transcript = &transcript
 	return nil
+}
+
+// PrefectProjects lists the project folders known to the audio bridge (Nextcloud Projects/).
+func PrefectProjects(ctx context.Context) ([]string, error) {
+	return projectCall(ctx, http.MethodGet, "")
+}
+
+// PrefectCreateProject creates a project folder and returns the updated list.
+func PrefectCreateProject(ctx context.Context, name string) ([]string, error) {
+	return projectCall(ctx, http.MethodPost, name)
+}
+
+func projectCall(ctx context.Context, method, name string) ([]string, error) {
+	base, auth, err := bridgeAuth()
+	if err != nil {
+		return nil, err
+	}
+	var body io.Reader
+	if name != "" {
+		data, _ := json.Marshal(map[string]string{"name": name})
+		body = strings.NewReader(string(data))
+	}
+	req, err := http.NewRequestWithContext(ctx, method, base+"/projects", body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", auth)
+	req.Header.Set("Content-Type", "application/json")
+	var reply struct {
+		Projects []string `json:"projects"`
+	}
+	client := &http.Client{Timeout: 30 * time.Second}
+	if err := prefectJSON(client, req, &reply); err != nil {
+		return nil, err
+	}
+	return reply.Projects, nil
 }

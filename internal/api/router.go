@@ -114,6 +114,17 @@ func SetupRoutes(handler *Handler, authService *auth.AuthService) *gin.Engine {
 			apiKeys.DELETE("/:id", handler.DeleteAPIKey)
 		}
 
+		// MemoRecorder app routes: upload with publication settings, projects in Nextcloud
+		memos := v1.Group("")
+		memos.Use(middleware.AuthMiddleware(authService))
+		{
+			memoUpload := memos.Group("")
+			memoUpload.Use(middleware.NoCompressionMiddleware())
+			memoUpload.POST("/memos", handler.CreateMemo)
+			memos.GET("/projects", handler.ListProjects)
+			memos.POST("/projects", handler.CreateProject)
+		}
+
 		// Transcription routes (require authentication)
 		transcription := v1.Group("/transcription")
 		transcription.Use(middleware.AuthMiddleware(authService))

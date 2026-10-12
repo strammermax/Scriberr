@@ -51,6 +51,12 @@ func TestPrefectHandoffImportsSegments(t *testing.T) {
 			if r.ContentLength != 11 {
 				t.Errorf("audio size=%d", r.ContentLength)
 			}
+			if r.Header.Get("X-Project") != "Project+X" || r.Header.Get("X-Title") != "Overleg+%C3%A9%C3%A9n" ||
+				r.Header.Get("X-Meeting-Type") != "interview" || r.Header.Get("X-Speakers") != "2" ||
+				r.Header.Get("X-Outputs") != "plain%2Cverslag" || r.Header.Get("X-Filename") != "audio.mp3" ||
+				r.Header.Get("X-Recorded-At") != "2026-10-12T09%3A30%3A00Z" {
+				t.Errorf("memo headers not passed: %v", r.Header)
+			}
 			_ = json.NewEncoder(w).Encode(map[string]string{"job_id": "0123456789abcdef0123456789abcdef", "run_id": "run"})
 		} else {
 			_, _ = w.Write([]byte(`{"status":"completed","client":"pc-47","result":{"text":"Hallo","segments":[{"start":1.2,"end":2.5,"text":"Hallo"}],"language":"nl","engine":"whisper.cpp-cuda","elapsed_seconds":1}}`))
@@ -61,7 +67,11 @@ func TestPrefectHandoffImportsSegments(t *testing.T) {
 	t.Setenv("PREFECT_AUDIO_TOKEN_FILE", token)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := prefectTranscript(ctx, audio, "nl")
+	title := "Overleg één"
+	recorded := time.Date(2026, 10, 12, 9, 30, 0, 0, time.UTC)
+	job := &models.TranscriptionJob{AudioPath: audio, Title: &title, Memo: models.MemoSettings{
+		Project: "Project X", MeetingType: "interview", Speakers: 2, Outputs: "plain,verslag", RecordedAt: &recorded}}
+	result, err := prefectTranscript(ctx, job, "nl")
 	if err != nil {
 		t.Fatal(err)
 	}

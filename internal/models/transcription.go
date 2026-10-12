@@ -31,8 +31,21 @@ type TranscriptionJob struct {
 	// WhisperX parameters
 	Parameters WhisperXParams `json:"parameters" gorm:"embedded"`
 
+	// MemoRecorder publication settings (set by the apps through /api/v1/memos)
+	Memo MemoSettings `json:"memo" gorm:"embedded;embeddedPrefix:memo_"`
+
 	// Relationships
 	MultiTrackFiles []MultiTrackFile `json:"multi_track_files,omitempty" gorm:"foreignKey:TranscriptionJobID"`
+}
+
+// MemoSettings describe how a recording is published to Nextcloud.
+// An empty Project means the job is not published.
+type MemoSettings struct {
+	Project     string     `json:"project,omitempty" gorm:"type:text"`
+	MeetingType string     `json:"meeting_type,omitempty" gorm:"type:varchar(20)"` // meeting | interview
+	Speakers    int        `json:"speakers,omitempty" gorm:"default:0"`
+	Outputs     string     `json:"outputs,omitempty" gorm:"type:varchar(64)"` // comma list: plain,verslag,samenvatting
+	RecordedAt  *time.Time `json:"recorded_at,omitempty"`
 }
 
 // JobStatus represents the status of a transcription job
