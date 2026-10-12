@@ -379,6 +379,27 @@
       "tag": "transcription"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/memos",
+      "summary": "Upload a memo recording",
+      "description": "Upload audio with MemoRecorder settings; it is transcribed through Prefect and published to Nextcloud",
+      "tag": "memos"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "summary": "List projects",
+      "description": "Project folders under Projects/ in Nextcloud",
+      "tag": "memos"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "summary": "Create a project",
+      "description": "Create a project folder under Projects/ in Nextcloud",
+      "tag": "memos"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/transcription/{id}/notes",
       "summary": "List notes for a transcription",

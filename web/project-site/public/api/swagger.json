@@ -1141,6 +1141,89 @@
                 }
             }
         },
+        "/api/v1/memos": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload audio with MemoRecorder settings; it is transcribed through Prefect and published to Nextcloud",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "Upload a memo recording",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio file",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project (Nextcloud folder under Projects/)",
+                        "name": "project",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Title",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "meeting (default) or interview",
+                        "name": "meeting_type",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of people",
+                        "name": "speakers",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "nl (default) or en",
+                        "name": "language",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma list of plain, verslag, samenvatting (default all)",
+                        "name": "outputs",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recording start, RFC3339",
+                        "name": "recorded_at",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TranscriptionJob"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/notes/{note_id}": {
             "get": {
                 "security": [
@@ -1590,6 +1673,75 @@
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Project folders under Projects/ in Nextcloud",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "List projects",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a project folder under Projects/ in Nextcloud",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "Create a project",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         }
                     }
@@ -4432,6 +4584,28 @@
                 "StatusFailed"
             ]
         },
+        "models.MemoSettings": {
+            "type": "object",
+            "properties": {
+                "meeting_type": {
+                    "description": "meeting | interview",
+                    "type": "string"
+                },
+                "outputs": {
+                    "description": "comma list: plain,verslag,samenvatting",
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "recorded_at": {
+                    "type": "string"
+                },
+                "speakers": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.MultiTrackFile": {
             "type": "object",
             "properties": {
@@ -4625,6 +4799,14 @@
                 },
                 "is_multi_track": {
                     "type": "boolean"
+                },
+                "memo": {
+                    "description": "MemoRecorder publication settings (set by the apps through /api/v1/memos)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.MemoSettings"
+                        }
+                    ]
                 },
                 "merge_error": {
                     "type": "string"
