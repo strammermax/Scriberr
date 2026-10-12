@@ -1197,7 +1197,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "nl (default) or en",
+                        "description": "nl (default), en or auto (detect)",
                         "name": "language",
                         "in": "formData"
                     },

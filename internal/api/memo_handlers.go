@@ -73,7 +73,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param title formData string false "Title"
 // @Param meeting_type formData string false "meeting (default), interview or conversation"
 // @Param speakers formData int false "Number of people"
-// @Param language formData string false "nl (default) or en"
+// @Param language formData string false "nl (default), en or auto (detect)"
 // @Param outputs formData string false "Comma list of plain, verslag, samenvatting (default all)"
 // @Param recorded_at formData string false "Recording start, RFC3339"
 // @Success 200 {object} models.TranscriptionJob
@@ -92,8 +92,8 @@ func (h *Handler) CreateMemo(c *gin.Context) {
 		return
 	}
 	language := getFormValueWithDefault(c, "language", "nl")
-	if language != "nl" && language != "en" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "language must be nl or en"})
+	if language != "nl" && language != "en" && language != "auto" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "language must be nl, en or auto"})
 		return
 	}
 	header, err := c.FormFile(paramAudio)
