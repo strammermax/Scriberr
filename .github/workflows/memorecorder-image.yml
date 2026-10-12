@@ -1,10 +1,10 @@
-name: OverlegWijzer Docker image
+name: MemoRecorder Docker image
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/overlegwijzer-image.yml'
+      - '.github/workflows/memorecorder-image.yml'
       - 'Dockerfile'
       - 'cmd/**'
       - 'internal/**'
@@ -16,7 +16,7 @@ permissions:
   contents: read
   packages: write
 concurrency:
-  group: overlegwijzer-image
+  group: memorecorder-image
   cancel-in-progress: false
 jobs:
   publish:
@@ -37,7 +37,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/strammermax/overlegwijzer:latest
-            ghcr.io/strammermax/overlegwijzer:sha-${{ github.sha }}
+            ghcr.io/strammermax/memorecorder:latest
+            ghcr.io/strammermax/memorecorder:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
