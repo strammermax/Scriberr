@@ -2,6 +2,17 @@ package api
 
 import "testing"
 
+func TestBridgeJobIDFromTranscript(t *testing.T) {
+	stored := `{"text":"x","metadata":{"bridge_job_id":"0123456789abcdef0123456789abcdef"}}`
+	if bridgeJobID(&stored) != "0123456789abcdef0123456789abcdef" {
+		t.Fatal("handoff id not found")
+	}
+	broken := "not json"
+	if bridgeJobID(&broken) != "" || bridgeJobID(nil) != "" {
+		t.Fatal("expected empty id")
+	}
+}
+
 func TestValidMemoSettingsDefaults(t *testing.T) {
 	m, problem := validMemoSettings(" Projectx ", "", "", "", "")
 	if problem != "" {

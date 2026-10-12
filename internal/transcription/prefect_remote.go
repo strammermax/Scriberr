@@ -143,7 +143,8 @@ func prefectTranscript(ctx context.Context, job *models.TranscriptionJob, langua
 			return &interfaces.TranscriptResult{Text: reply.Result.Text, Language: reply.Result.Language,
 				Segments: reply.Result.Segments, ModelUsed: reply.Result.Engine + ":small",
 				ProcessingTime: time.Duration(reply.Result.Elapsed * float64(time.Second)),
-				Metadata:       map[string]string{"prefect_run_id": accepted.RunID, "worker": reply.Client}}, nil
+				Metadata: map[string]string{"prefect_run_id": accepted.RunID, "worker": reply.Client,
+					"bridge_job_id": accepted.JobID}}, nil
 		case "failed":
 			return nil, fmt.Errorf("%s", reply.Error)
 		case "pending":
@@ -231,4 +232,35 @@ func projectCall(ctx context.Context, method, name string) ([]string, error) {
 		return nil, err
 	}
 	return reply.Projects, nil
+}
+
+// MemoPublication is how far the Nextcloud publication of a memo is.
+type MemoPublication struct {
+	Status string `json:"status"` // busy | published | failed (empty before the first step)
+	Stage  string `json:"stage,omitempty"` // speakers | summary | report | nextcloud
+	Folder string `json:"folder,omitempty"`
+	Error  string `json:"error,omitempty"`
+}
+
+// PrefectPublication asks the bridge whether a handed-off recording is published.
+func PrefectPublication(ctx context.Context, bridgeJobID string) (*MemoPublication, error) {
+	if !regexp.MustCompile(`^[0-9a-f]{32}$`).MatchString(bridgeJobID) {
+		return nil, fmt.Errorf("Invalid Prefect handoff ID")
+	}
+	base, auth, err := bridgeAuth()
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/jobs/"+bridgeJobID, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", auth)
+	var reply struct {
+		Publication MemoPublication `json:"publication"`
+	}
+	if err := prefectJSON(&http.Client{Timeout: 30 * time.Second}, req, &reply); err != nil {
+		return nil, err
+	}
+	return &reply.Publication, nil
 }

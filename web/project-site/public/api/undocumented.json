@@ -401,6 +401,13 @@
     },
     {
       "method": "GET",
+      "path": "/api/v1/memos/{id}",
+      "summary": "Memo status",
+      "description": "Transcription status plus the Nextcloud publication status of a memo",
+      "tag": "memos"
+    },
+    {
+      "method": "GET",
       "path": "/api/v1/transcription/{id}/notes",
       "summary": "List notes for a transcription",
       "description": "Get all notes attached to a transcription, ordered by time and creation",

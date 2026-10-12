@@ -1224,6 +1224,44 @@
                 }
             }
         },
+        "/api/v1/memos/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Transcription status plus the Nextcloud publication status of a memo",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "Memo status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/notes/{note_id}": {
             "get": {
                 "security": [

@@ -121,6 +121,7 @@ func SetupRoutes(handler *Handler, authService *auth.AuthService) *gin.Engine {
 			memoUpload := memos.Group("")
 			memoUpload.Use(middleware.NoCompressionMiddleware())
 			memoUpload.POST("/memos", handler.CreateMemo)
+			memos.GET("/memos/:id", handler.GetMemo)
 			memos.GET("/projects", handler.ListProjects)
 			memos.POST("/projects", handler.CreateProject)
 		}

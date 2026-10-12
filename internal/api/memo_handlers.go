@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -183,4 +184,45 @@ func (h *Handler) CreateProject(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"projects": projects})
+}
+
+// @Summary Memo status
+// @Description Transcription status plus the Nextcloud publication status of a memo
+// @Tags memos
+// @Produce json
+// @Param id path string true "Job ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/v1/memos/{id} [get]
+// @Security ApiKeyAuth
+// @Security BearerAuth
+func (h *Handler) GetMemo(c *gin.Context) {
+	job, err := h.jobRepo.FindByID(c.Request.Context(), c.Param("id"))
+	if err != nil || job == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Memo not found"})
+		return
+	}
+	reply := gin.H{"id": job.ID, "status": job.Status, "memo": job.Memo}
+	if job.ErrorMessage != nil {
+		reply["error"] = *job.ErrorMessage
+	}
+	if id := bridgeJobID(job.Transcript); job.Status == models.StatusCompleted && id != "" && job.Memo.Project != "" {
+		if publication, err := transcription.PrefectPublication(c.Request.Context(), id); err == nil {
+			reply["publication"] = publication
+		}
+	}
+	c.JSON(http.StatusOK, reply)
+}
+
+// bridgeJobID reads the audio bridge handoff id from the stored transcript metadata.
+func bridgeJobID(transcript *string) string {
+	if transcript == nil {
+		return ""
+	}
+	var stored struct {
+		Metadata map[string]string `json:"metadata"`
+	}
+	if json.Unmarshal([]byte(*transcript), &stored) != nil {
+		return ""
+	}
+	return stored.Metadata["bridge_job_id"]
 }
