@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -225,4 +226,50 @@ func bridgeJobID(transcript *string) string {
 		return ""
 	}
 	return stored.Metadata["bridge_job_id"]
+}
+
+// @Summary Live text for a recording in progress
+// @Description Transcribe one short audio chunk (any format ffmpeg reads, e.g. Opus in Ogg; max 4 MB) while recording; the provider is MEMORECORDER_LIVE_PROVIDER
+// @Tags memos
+// @Accept multipart/form-data
+// @Produce json
+// @Param audio formData file true "Audio chunk (e.g. Opus in Ogg)"
+// @Param language formData string false "nl, en or auto (default)"
+// @Success 200 {object} transcription.LiveResult
+// @Router /api/v1/live [post]
+// @Security ApiKeyAuth
+// @Security BearerAuth
+func (h *Handler) LiveTranscribe(c *gin.Context) {
+	language := getFormValueWithDefault(c, "language", "auto")
+	if language != "nl" && language != "en" && language != "auto" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "language must be nl, en or auto"})
+		return
+	}
+	header, err := c.FormFile(paramAudio)
+	if err != nil || header.Size <= 0 || header.Size > 4*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Audio chunk (max 4 MB) is required"})
+		return
+	}
+	file, err := header.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unreadable audio chunk"})
+		return
+	}
+	defer file.Close()
+	audio, err := io.ReadAll(io.LimitReader(file, 4*1024*1024))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unreadable audio chunk"})
+		return
+	}
+	provider, err := transcription.NewLiveProvider()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
+		return
+	}
+	result, err := provider.Transcribe(c.Request.Context(), audio, language)
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Live transcription unavailable"})
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }

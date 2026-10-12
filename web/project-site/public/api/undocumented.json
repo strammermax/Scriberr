@@ -407,6 +407,13 @@
       "tag": "memos"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/live",
+      "summary": "Live text for a recording in progress",
+      "description": "Transcribe one short audio chunk (any format ffmpeg reads, e.g. Opus in Ogg; max 4 MB) while recording; the provider is MEMORECORDER_LIVE_PROVIDER",
+      "tag": "memos"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/transcription/{id}/notes",
       "summary": "List notes for a transcription",

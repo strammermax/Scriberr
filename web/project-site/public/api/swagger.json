@@ -1061,6 +1061,52 @@
                 }
             }
         },
+        "/api/v1/live": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Transcribe one short audio chunk (any format ffmpeg reads, e.g. Opus in Ogg; max 4 MB) while recording; the provider is MEMORECORDER_LIVE_PROVIDER",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "Live text for a recording in progress",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio chunk (e.g. Opus in Ogg)",
+                        "name": "audio",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "nl, en or auto (default)",
+                        "name": "language",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/transcription.LiveResult"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/llm/config": {
             "get": {
                 "security": [
@@ -5162,6 +5208,20 @@
                 },
                 "verbose": {
                     "type": "boolean"
+                }
+            }
+        },
+        "transcription.LiveResult": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "worker": {
+                    "type": "string"
                 }
             }
         },
