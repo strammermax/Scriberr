@@ -46,6 +46,8 @@ type MemoSettings struct {
 	Speakers    int        `json:"speakers,omitempty" gorm:"default:0"`
 	Outputs     string     `json:"outputs,omitempty" gorm:"type:varchar(64)"` // comma list: plain,verslag,samenvatting
 	RecordedAt  *time.Time `json:"recorded_at,omitempty"`
+	// LiveText is what the app showed live while recording; published as livetekst.md.
+	LiveText string `json:"live_text,omitempty" gorm:"type:text"`
 }
 
 // JobStatus represents the status of a transcription job

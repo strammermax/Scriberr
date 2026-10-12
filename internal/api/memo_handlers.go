@@ -78,6 +78,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param language formData string false "nl (default), en or auto (detect)"
 // @Param outputs formData string false "Comma list of plain, verslag, samenvatting (default all)"
 // @Param recorded_at formData string false "Recording start, RFC3339"
+// @Param live_text formData string false "Live text captured during recording (max 1 MB)"
 // @Success 200 {object} models.TranscriptionJob
 // @Router /api/v1/memos [post]
 // @Security ApiKeyAuth
@@ -92,6 +93,13 @@ func (h *Handler) CreateMemo(c *gin.Context) {
 	if problem != "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": problem})
 		return
+	}
+	if live := c.PostForm("live_text"); live != "" {
+		if len(live) > 1024*1024 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "live_text is limited to 1 MB"})
+			return
+		}
+		memo.LiveText = live
 	}
 	language := getFormValueWithDefault(c, "language", "nl")
 	if language != "nl" && language != "en" && language != "auto" {

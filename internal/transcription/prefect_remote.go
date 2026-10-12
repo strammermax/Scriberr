@@ -107,6 +107,19 @@ func prefectTranscript(ctx context.Context, job *models.TranscriptionJob, langua
 		return nil, fmt.Errorf("Invalid Prefect handoff ID")
 	}
 	logger.Info("Audio submitted to Prefect", "run_id", accepted.RunID)
+	if job.Memo.LiveText != "" {
+		// Before the publication runs: the bridge keeps it next to the audio as livetekst.md.
+		liveReq, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/livetext/"+accepted.JobID,
+			strings.NewReader(job.Memo.LiveText))
+		if err == nil {
+			liveReq.Header.Set("Authorization", auth)
+			liveReq.Header.Set("Content-Type", "text/markdown; charset=utf-8")
+			var stored map[string]string
+			if err := prefectJSON(client, liveReq, &stored); err != nil {
+				logger.Warn("Live text not passed to the bridge", "error", err)
+			}
+		}
+	}
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 	for {

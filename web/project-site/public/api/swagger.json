@@ -1258,6 +1258,12 @@
                         "description": "Recording start, RFC3339",
                         "name": "recorded_at",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Live text captured during recording (max 1 MB)",
+                        "name": "live_text",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4671,6 +4677,10 @@
         "models.MemoSettings": {
             "type": "object",
             "properties": {
+                "live_text": {
+                    "description": "LiveText is what the app showed live while recording; published as livetekst.md.",
+                    "type": "string"
+                },
                 "meeting_type": {
                     "description": "meeting | interview | conversation",
                     "type": "string"
