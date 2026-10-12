@@ -55,6 +55,7 @@ func memoHeaders(req *http.Request, job *models.TranscriptionJob) {
 	set("X-Filename", filepath.Base(job.AudioPath))
 	set("X-Meeting-Type", m.MeetingType)
 	set("X-Outputs", m.Outputs)
+	set("X-Attendees", strings.ReplaceAll(m.Attendees, "\n", ", "))
 	if m.Speakers > 0 {
 		set("X-Speakers", fmt.Sprint(m.Speakers))
 	}

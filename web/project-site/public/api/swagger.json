@@ -1264,6 +1264,12 @@
                         "description": "Live text captured during recording (max 1 MB)",
                         "name": "live_text",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Attendee names, one per line (from the calendar)",
+                        "name": "attendees",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4677,6 +4683,10 @@
         "models.MemoSettings": {
             "type": "object",
             "properties": {
+                "attendees": {
+                    "description": "Attendees from the calendar invitation, one per line.",
+                    "type": "string"
+                },
                 "live_text": {
                     "description": "LiveText is what the app showed live while recording; published as livetekst.md.",
                     "type": "string"

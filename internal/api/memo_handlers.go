@@ -79,6 +79,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param outputs formData string false "Comma list of plain, verslag, samenvatting (default all)"
 // @Param recorded_at formData string false "Recording start, RFC3339"
 // @Param live_text formData string false "Live text captured during recording (max 1 MB)"
+// @Param attendees formData string false "Attendee names, one per line (from the calendar)"
 // @Success 200 {object} models.TranscriptionJob
 // @Router /api/v1/memos [post]
 // @Security ApiKeyAuth
@@ -100,6 +101,13 @@ func (h *Handler) CreateMemo(c *gin.Context) {
 			return
 		}
 		memo.LiveText = live
+	}
+	if attendees := strings.TrimSpace(c.PostForm("attendees")); attendees != "" {
+		if len(attendees) > 4000 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "attendees is limited to 4000 characters"})
+			return
+		}
+		memo.Attendees = attendees
 	}
 	language := getFormValueWithDefault(c, "language", "nl")
 	if language != "nl" && language != "en" && language != "auto" {

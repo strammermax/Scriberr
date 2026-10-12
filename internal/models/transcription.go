@@ -48,6 +48,8 @@ type MemoSettings struct {
 	RecordedAt  *time.Time `json:"recorded_at,omitempty"`
 	// LiveText is what the app showed live while recording; published as livetekst.md.
 	LiveText string `json:"live_text,omitempty" gorm:"type:text"`
+	// Attendees from the calendar invitation, one per line.
+	Attendees string `json:"attendees,omitempty" gorm:"type:text"`
 }
 
 // JobStatus represents the status of a transcription job
