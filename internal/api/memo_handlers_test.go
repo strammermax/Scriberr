@@ -24,6 +24,9 @@ func TestValidMemoSettingsDefaults(t *testing.T) {
 }
 
 func TestValidMemoSettingsChoices(t *testing.T) {
+	if _, problem := validMemoSettings("A", "klant_b", "", "verslag,actiepunten", ""); problem != "" {
+		t.Fatal(problem)
+	}
 	if _, problem := validMemoSettings("A", "conversation", "", "", ""); problem != "" {
 		t.Fatal(problem)
 	}
@@ -41,7 +44,8 @@ func TestValidMemoSettingsRejects(t *testing.T) {
 		{"../etc", "", "", "", ""},
 		{"", "", "", "", ""},
 		{"..", "", "", "", ""},
-		{"A", "party", "", "", ""},
+		{"A", "Party!", "", "", ""},
+		{"A", "", "", "plain,notulen", ""},
 		{"A", "", "0", "", ""},
 		{"A", "", "", "notulen", ""},
 		{"A", "", "", "", "gisteren"},

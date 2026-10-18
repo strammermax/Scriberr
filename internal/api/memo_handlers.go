@@ -20,7 +20,10 @@ import (
 // Project names become Nextcloud folders: no path separators or control characters.
 var projectNamePattern = regexp.MustCompile(`^[^/\\:*?"<>|\x00-\x1f]{1,80}$`)
 
-var memoOutputs = map[string]bool{"plain": true, "verslag": true, "samenvatting": true}
+var memoOutputs = map[string]bool{"plain": true, "verslag": true, "samenvatting": true, "actiepunten": true}
+
+// Built-in templates and own ones from sjablonen.json in Nextcloud; the flow falls back to meeting.
+var meetingTypePattern = regexp.MustCompile(`^[a-z0-9_-]{1,20}$`)
 
 // validMemoSettings checks and normalises the memo form fields.
 func validMemoSettings(project, meetingType, speakers, outputs, recordedAt string) (models.MemoSettings, string) {
@@ -31,8 +34,8 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 	if m.MeetingType == "" {
 		m.MeetingType = "meeting"
 	}
-	if m.MeetingType != "meeting" && m.MeetingType != "interview" && m.MeetingType != "conversation" {
-		return m, "meeting_type must be meeting, interview or conversation"
+	if !meetingTypePattern.MatchString(m.MeetingType) {
+		return m, "meeting_type must be a template name: a-z, 0-9, _ or -, at most 20"
 	}
 	if speakers != "" {
 		n, err := strconv.Atoi(speakers)
@@ -47,7 +50,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 			continue
 		}
 		if !memoOutputs[o] {
-			return m, "outputs may only contain plain, verslag, samenvatting"
+			return m, "outputs may only contain plain, verslag, samenvatting, actiepunten"
 		}
 		chosen = append(chosen, o)
 	}
@@ -73,10 +76,10 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param audio formData file true "Audio file"
 // @Param project formData string true "Project (Nextcloud folder under Projects/)"
 // @Param title formData string false "Title"
-// @Param meeting_type formData string false "meeting (default), interview or conversation"
+// @Param meeting_type formData string false "Template: meeting (default), interview, conversation, one_on_one, sales, job_interview, brainstorm, lecture or an own one"
 // @Param speakers formData int false "Number of people"
 // @Param language formData string false "nl (default), en or auto (detect)"
-// @Param outputs formData string false "Comma list of plain, verslag, samenvatting (default all)"
+// @Param outputs formData string false "Comma list of plain, verslag, samenvatting, actiepunten (default plain, verslag, samenvatting)"
 // @Param recorded_at formData string false "Recording start, RFC3339"
 // @Param live_text formData string false "Live text captured during recording (max 1 MB)"
 // @Param attendees formData string false "Attendee names, one per line (from the calendar)"
