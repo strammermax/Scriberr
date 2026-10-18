@@ -251,8 +251,9 @@ func projectCall(ctx context.Context, method, name string) ([]string, error) {
 // MemoPublication is how far the Nextcloud publication of a memo is.
 type MemoPublication struct {
 	Status string `json:"status"` // busy | published | failed (empty before the first step)
-	Stage  string `json:"stage,omitempty"` // speakers | summary | report | nextcloud
+	Stage  string `json:"stage,omitempty"` // speakers | summary | quotes | report | actions | nextcloud
 	Folder string `json:"folder,omitempty"`
+	FileID string `json:"fileid,omitempty"` // Nextcloud file ID of the folder: https://<cloud>/f/<id>
 	Error  string `json:"error,omitempty"`
 }
 
