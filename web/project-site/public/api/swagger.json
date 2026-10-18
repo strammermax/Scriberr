@@ -1231,7 +1231,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "meeting (default), interview or conversation",
+                        "description": "Template: meeting (default), interview, conversation, one_on_one, sales, job_interview, brainstorm, lecture or an own one",
                         "name": "meeting_type",
                         "in": "formData"
                     },
@@ -1249,7 +1249,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "Comma list of plain, verslag, samenvatting (default all)",
+                        "description": "Comma list of plain, verslag, samenvatting, actiepunten (default plain, verslag, samenvatting)",
                         "name": "outputs",
                         "in": "formData"
                     },
@@ -4692,11 +4692,11 @@
                     "type": "string"
                 },
                 "meeting_type": {
-                    "description": "meeting | interview | conversation",
+                    "description": "template name, e.g. meeting or sales",
                     "type": "string"
                 },
                 "outputs": {
-                    "description": "comma list: plain,verslag,samenvatting",
+                    "description": "comma list: plain,verslag,samenvatting,actiepunten",
                     "type": "string"
                 },
                 "project": {
