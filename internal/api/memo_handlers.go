@@ -22,6 +22,9 @@ var projectNamePattern = regexp.MustCompile(`^[^/\\:*?"<>|\x00-\x1f]{1,80}$`)
 
 var memoOutputs = map[string]bool{"plain": true, "verslag": true, "samenvatting": true, "actiepunten": true}
 
+// A plain e-mail address (no display name, no list); the flow mails the documents to it.
+var emailPattern = regexp.MustCompile(`^[^@\s,;<>]{1,64}@[^@\s,;<>]{1,189}\.[A-Za-z]{2,}$`)
+
 // Built-in templates and own ones from sjablonen.json in Nextcloud; the flow falls back to meeting.
 var meetingTypePattern = regexp.MustCompile(`^[a-z0-9_-]{1,20}$`)
 
@@ -83,6 +86,7 @@ func validMemoSettings(project, meetingType, speakers, outputs, recordedAt strin
 // @Param recorded_at formData string false "Recording start, RFC3339"
 // @Param live_text formData string false "Live text captured during recording (max 1 MB)"
 // @Param attendees formData string false "Attendee names, one per line (from the calendar)"
+// @Param notify_email formData string false "E-mail address that receives the documents as a zip"
 // @Success 200 {object} models.TranscriptionJob
 // @Router /api/v1/memos [post]
 // @Security ApiKeyAuth
@@ -111,6 +115,13 @@ func (h *Handler) CreateMemo(c *gin.Context) {
 			return
 		}
 		memo.Attendees = attendees
+	}
+	if email := strings.TrimSpace(c.PostForm("notify_email")); email != "" {
+		if !emailPattern.MatchString(email) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "notify_email is not an e-mail address"})
+			return
+		}
+		memo.NotifyEmail = email
 	}
 	language := getFormValueWithDefault(c, "language", "nl")
 	if language != "nl" && language != "en" && language != "auto" {

@@ -50,6 +50,8 @@ type MemoSettings struct {
 	LiveText string `json:"live_text,omitempty" gorm:"type:text"`
 	// Attendees from the calendar invitation, one per line.
 	Attendees string `json:"attendees,omitempty" gorm:"type:text"`
+	// NotifyEmail receives the documents as a zip once published.
+	NotifyEmail string `json:"notify_email,omitempty" gorm:"type:varchar(254)"`
 }
 
 // JobStatus represents the status of a transcription job

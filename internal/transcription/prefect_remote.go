@@ -56,6 +56,7 @@ func memoHeaders(req *http.Request, job *models.TranscriptionJob) {
 	set("X-Meeting-Type", m.MeetingType)
 	set("X-Outputs", m.Outputs)
 	set("X-Attendees", strings.ReplaceAll(m.Attendees, "\n", ", "))
+	set("X-Notify-Email", m.NotifyEmail)
 	if m.Speakers > 0 {
 		set("X-Speakers", fmt.Sprint(m.Speakers))
 	}

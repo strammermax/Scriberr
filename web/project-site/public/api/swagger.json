@@ -1270,6 +1270,12 @@
                         "description": "Attendee names, one per line (from the calendar)",
                         "name": "attendees",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "E-mail address that receives the documents as a zip",
+                        "name": "notify_email",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4693,6 +4699,10 @@
                 },
                 "meeting_type": {
                     "description": "template name, e.g. meeting or sales",
+                    "type": "string"
+                },
+                "notify_email": {
+                    "description": "NotifyEmail receives the documents as a zip once published.",
                     "type": "string"
                 },
                 "outputs": {
